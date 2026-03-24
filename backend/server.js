@@ -196,7 +196,7 @@ next(error);
 });
 
 //Pornim serverul pe portul 5000
-const PORT=process.env.PORT || 5000;
+const PORT=process.env.port || 5000;
 app.listen(PORT,() =>{
     console.log(`Server running on http://localhost:${PORT}`);
     console.log(`Serving static images from:${path.join(__dirname,"images")}`);
