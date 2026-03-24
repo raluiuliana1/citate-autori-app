@@ -58,9 +58,19 @@ app.get("/api/quotes",async(req,res)=>{
   try{
     const response=await fetch(JSON_SERVER_URL);
     const data=await response.json();
-    res.json(data);
+const {search}=req.query;
+if(search && search.trim()){
+  const term = search.trim().toLowerCase();
+
+  const filtered=data.filter(q =>
+    q.author.toLowerCase().includes(term) ||
+    q.quote.toLowerCase().includes(term)
+  );
+  return res.status(200).json(filtered);
+}
+    res.status(200).json(data);
   }catch (error){
-    console.error("eroare la preluarea citatelor:",error);
+    console.error("eroare la preluarea citatelor:",error.message);
     res.status(500).json({error:"nu s-au putut prelua citatele"});
   }
   });
@@ -186,7 +196,7 @@ next(error);
 });
 
 //Pornim serverul pe portul 5000
-const PORT=process.env.port || 5000;
+const PORT=process.env.PORT || 5000;
 app.listen(PORT,() =>{
     console.log(`Server running on http://localhost:${PORT}`);
     console.log(`Serving static images from:${path.join(__dirname,"images")}`);
