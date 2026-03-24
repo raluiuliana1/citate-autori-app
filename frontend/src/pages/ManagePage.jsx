@@ -2,6 +2,26 @@ import { useEffect, useState } from "react";
 import { Link} from "react-router-dom";
 import QuoteCard from "../components/QuoteCard";
 import { getAllQuotes, addQuote, updateQuote, deleteQuote } from "../api/quotesApi";
+import {useFormValidation} from "../hooks/useFormValidation";
+
+const VAlIDATION_RULES={
+    author:{
+        required:    true,
+        requiredMsg:"Autorul este obligatoriu.",
+        minLength:  2,
+        minLengthMsg:"Autorul trebuire sa aiba cel putin doua caractere.",
+        maxLength:  100,
+        maxLengthMsg:"Autorul poate avea maxim 100 de caractere.",
+    },
+    quote:{
+        required:    true,
+        requiredMsg:"Citatul este obligatoriu.",
+        minLength:  5,
+        minLengthMsg:"CItatul trebuie sa aiba cel putin 5 caractere.",
+        maxLength:  500,
+        maxLengthMsg:"Autorul poate avea maxim 500 de caractere.",
+    },
+};
 
 export default function ManagePage() {
 
@@ -14,6 +34,9 @@ const [formData,setFormData]      =useState({author:"",quote:""});
 
 const[feedback,setFeedback]       =useState({message:"",type:""});
 const[loading,setLoading]         =useState(true);
+
+const {errors,validate,clearErrors}= useFormValidation(VAlIDATION_RULES);
+
 useEffect(()=>{
         fetchQuotes();
     }, []);
@@ -36,6 +59,9 @@ setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
 async function handleSubmit(e) {
 e.preventDefault();
+
+if(!validate(formData)) return;
+
 try {
 if (editingQuote) {
 
@@ -58,7 +84,7 @@ function handleEdit(quote) {
 
 setEditingQuote(quote);
 setFormData({ author: quote.author, quote: quote.quote });
-
+clearErrors();
 window.scrollTo({ top:0, behavior: "smooth" });
 }
 
@@ -78,6 +104,7 @@ showFeedback(err.message, "error");
 function resetForm() {
 setEditingQuote(null);
 setFormData({ author: "", quote: ""});
+clearErrors();
 }
 // Afişează mesajul de feedback şi il ascunde automat după 3 secunde
 function showFeedback(message, type) {
@@ -86,7 +113,14 @@ setFeedback({ message, type });
 setTimeout(() => setFeedback({ message: "", type: ""}), 3000);
 }
 
-const inputClass ="w-full px-4 py-2 border rounded-lg text-sm focus:outline-none focus: ring-2 focus: ring-brand border-gray-300 bg-white text-gray-800 placeholder-gray-400 transition";
+
+const inputBase=`w-full px-4 py-2 border rpunded-lg text-sm
+focus:outline-none focus:ring-2 transition`;
+const inputClass=(field)=>
+    `${inputBase} ${errors[field]? "border-red-400 focus:ring-red-300 bg-red-50"
+        :"border-gray-300 focus:ring-indigo-300 bg-white"
+    }`;
+
 return(
     <div className="min-h-screen bg-gray-50">
 
@@ -100,7 +134,7 @@ justify-between">
 to="/"
 className="px-4 py-2 text-sm font-medium text-brand border border-brand rounded-lg hover:bg-brand hover: text-white transition-colors duration-200"
 >
- Inapoi la citate
+ ⬅️ Inapoi la citate
 </Link>
 </div>
    </header>
@@ -116,17 +150,17 @@ ${feedback.type=== "success"
     }`}
     >
 
-    {feedback.type==="success"? "✓": "✗"} {feedback.message}
+    {feedback.type==="success"? "✅": "⚠️"} {feedback.message}
     </div>
 )}
     {/* Formular adaugare / editare */}
 <section  className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
     {/* Titlul si culoarea se schimba dinamic in functie de modul activ*/}
     <h2 className={`text-lg font-semibold mb-6 ${editingQuote ? "text-amber-600" : "text-brand"}`}>
-        {editingQuote? "Editeaza citatul":" adauga citat nou"}
+        {editingQuote? "Editeaza citatul":" ➕ adauga citat nou"}
     </h2>
     {/* onSubmit pe <form> - capturat pe handleSubmit*/}
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5" noValidate>
     {/*Câmp autor */}
 <div>
 <label htmlFor="author" className="block text-sm font-medium
@@ -140,9 +174,13 @@ type="text"
 value={formData.author}
 onChange={handleChange}
 placeholder="ex.Marcus Aurelius"
-required
-className={inputClass}
+className={inputClass("author")}
 />
+{errors.author && (
+    <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
+        <span>⚠️</span>{errors.author}
+    </p>
+)}
 </div>
 {/*Camp  citat */}
 <div>
@@ -157,8 +195,20 @@ className={inputClass}
     placeholder="Introduceti citatul..."
     rows={4}
     required
-    className={`${inputClass} resize-none`}
+    className={`${inputClass("quote")} resize-none`}
     />
+    <div className="flex sutify-between mt-1">
+    {errors.quote
+    ? <p className="text-xs text-red-500 flex itemss-center gap-1">
+        <span>⚠️</span> {errors.quote}
+    </p>
+    : <span />
+    }
+
+    <span className={`text-xs ml-auto ${formData.quote.length > 450 ? "text-red-400" :"text-gray-400"}`}>
+        {formData.quote.length}/500
+    </span>
+ </div>
 </div>
 {/*Butoanele formular se schimba in functie de mod */}
 <div className="flex gap-3 pt-2">
@@ -172,32 +222,13 @@ className={inputClass}
                 >
                     {editingQuote ? " Salveaza modificarile":" Adauga citat"}
                 </button>
-
-</div>
-
-
-{/* Butoane formular - se schimba in functie de mod*/}
-<div className="flex gap-3 pt-2">
-    <button
-    type="submit"
-    className={`flex-1 py-2.5 text-sm font-semibold text-white rounded-lg
-                                                transition-colors duration-200
-                                                ${editingQuote
-                                                    ? "bg-amber-500 hover:bg-amber-600"
-                                                    :"bg-brand hover:bg-brand-dark"}`}
->
-    {editingQuote ? "Salveaza modificarile":"Adauga citat"}
-</button>
-
-{/* Butonul "Anuleaza" apare doar in modul de editare*/}
 {editingQuote && (
-<button
-type="button"
-onClick={resetForm}
-className="flex-1 py-2.5 text-sm font-semibold text-bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200"
->
-    Anuleaza
-</button>
+    <button type="button" onClick={resetForm}
+    className="flex-1 py-2.5 text-sm font-semibold text-gray-600
+                     bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                        ❌ Anuleaza
+                     </button>
+
 )}
 </div>
 </form>

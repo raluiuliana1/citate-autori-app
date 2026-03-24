@@ -1,7 +1,11 @@
 
 const BASE_URL = "/api/quotes";
-export async function getAllQuotes() {
-const response = await fetch(BASE_URL);
+export async function getAllQuotes(search ="") {
+    const url=search.trim()
+    ?`${BASE_URL}?search=${encodeURIComponent(search.trim())}`
+    :BASE_URL;
+
+const response = await fetch(url);
 if (!response.ok) throw new Error("Nu s-au putut prelua citatele.");
 return response.json();
 }
