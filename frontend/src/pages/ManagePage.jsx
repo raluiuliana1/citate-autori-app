@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link} from "react-router-dom";
 import QuoteCard from "../components/QuoteCard";
-import { getAllQuotes, addQuote, updateQuote, deleteQuote } from "../api/quotesApi";
+import { getAllQuotes, addQuote, updateQuote, deleteQuote,fetchAuthorImage } from "../api/quotesApi";
 import {useFormValidation} from "../hooks/useFormValidation";
 
 const VAlIDATION_RULES={
@@ -36,6 +36,9 @@ const[feedback,setFeedback]       =useState({message:"",type:""});
 const[loading,setLoading]         =useState(true);
 
 const {errors,validate,clearErrors}= useFormValidation(VAlIDATION_RULES);
+const [imageUrl, setImageUrl]         = useState("");
+const [imageLoading, setImageLoading] = useState(false);
+const [imageError, setImageError]     = useState("");
 
 useEffect(()=>{
         fetchQuotes();
@@ -52,38 +55,38 @@ showFeedback(err.message, "error");
 setLoading (false);
 }
 }
+
      
 function handleChange(e) {
 setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
 }
 
-async function handleSubmit(e) {
-e.preventDefault();
+async function handleFetchImage() {
+  if (!formData.author.trim()) {
+    setImageError("Introduceți mai întâi numele autorului.");
+    return;
+  }
 
-if(!validate(formData)) return;
+  setImageLoading(true);
+  setImageError("");
 
-try {
-if (editingQuote) {
-
-await updateQuote (editingQuote.id, formData);
-showFeedback("Citatul a fost actualizat cu succes.", "success");
-} else {
-    await addQuote(formData);
-    showFeedback("CItatul a fost actualizat cu succes.","succes");
-}
-
-resetForm();
-fetchQuotes();
-} catch (err) {
-
-showFeedback(err.message, "error");
-}
+  try {
+    const result = await fetchAuthorImage(formData.author);
+    setImageUrl(result.imageUrl);
+  } catch (err) {
+    setImageError(err.message);
+    setImageUrl("");
+  } finally {
+    setImageLoading(false);
+  }
 }
 
 function handleEdit(quote) {
 
 setEditingQuote(quote);
 setFormData({ author: quote.author, quote: quote.quote });
+setImageUrl(quote.imageUrl || "");
+setImageError("");
 clearErrors();
 window.scrollTo({ top:0, behavior: "smooth" });
 }
@@ -99,14 +102,43 @@ fetchQuotes();
 showFeedback(err.message, "error");
 }
 }
-// Functii utilitare
-// Resetează formularul şi iese din modul editare
+
 function resetForm() {
 setEditingQuote(null);
 setFormData({ author: "", quote: ""});
+setImageUrl("");
+setImageError("");
 clearErrors();
 }
-// Afişează mesajul de feedback şi il ascunde automat după 3 secunde
+
+
+async function handleSubmit(e) {
+e.preventDefault();
+
+if(!validate(formData)) return;
+
+
+const payload={...formData,imageUrl};
+
+try {
+if (editingQuote) {
+
+await updateQuote (editingQuote.id, payload);
+showFeedback("Citatul a fost actualizat cu succes.", "success");
+} else {
+    await addQuote(payload);
+    showFeedback("CItatul a fost adaugat cu succes.","succes");
+}
+resetForm();
+fetchQuotes();
+} catch (err) {
+
+showFeedback(err.message, "error");
+}
+}
+
+
+
 function showFeedback(message, type) {
 
 setFeedback({ message, type });
@@ -114,7 +146,7 @@ setTimeout(() => setFeedback({ message: "", type: ""}), 3000);
 }
 
 
-const inputBase=`w-full px-4 py-2 border rpunded-lg text-sm
+const inputBase=`w-full px-4 py-2 border rounded-lg text-sm
 focus:outline-none focus:ring-2 transition`;
 const inputClass=(field)=>
     `${inputBase} ${errors[field]? "border-red-400 focus:ring-red-300 bg-red-50"
@@ -125,14 +157,14 @@ return(
     <div className="min-h-screen bg-gray-50">
 
      {/* Header*/}
-    <header className="sticky top-8 2-10 bg-white shadow-sm">
+    <header className="sticky top-8 z-10 bg-white shadow-sm">
 <div className="max-w-5xl mx-auto px-4 py-4 flex items-center
 justify-between">
 <h1 className="text-2x1 font-bold text-brand"> Administrare citate</h1>
 {/* Link de întoarce a utilizatorului la pagina de afişare */}
 <Link
 to="/"
-className="px-4 py-2 text-sm font-medium text-brand border border-brand rounded-lg hover:bg-brand hover: text-white transition-colors duration-200"
+className="px-4 py-2 text-sm font-medium text-indigo-600 border border-indigo-600 rounded-lg hover:bg-indigo-600 hover: text-white transition-colors duration-200"
 >
  ⬅️ Inapoi la citate
 </Link>
@@ -182,6 +214,66 @@ className={inputClass("author")}
     </p>
 )}
 </div>
+
+{/* — Secțiunea imagine autor — */}
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-1">
+    Imagine autor
+  </label>
+
+  <div className="flex gap-2">
+    {/* Butonul caută imaginea pe Wikipedia prin Express */}
+    <button
+      type="button"      // ← nu trimite formularul
+      onClick={handleFetchImage}
+      disabled={imageLoading || !formData.author.trim()}
+      className="flex-1 py-2 px-4 text-sm font-medium rounded-lg border
+                 border-indigo-300 text-indigo-600 bg-indigo-50
+                 hover:bg-indigo-100 disabled:opacity-50
+                 disabled:cursor-not-allowed transition-colors"
+    >
+      {imageLoading ? "⏳ Se caută..." : "🔍 Caută imagine pe Wikipedia"}
+    </button>
+
+    {/* Dacă există imagine, afișăm buton de ștergere */}
+    {imageUrl && (
+      <button
+        type="button"
+        onClick={() => { setImageUrl(""); setImageError(""); }}
+        className="px-3 py-2 text-sm text-red-500 border border-red-200
+                   rounded-lg hover:bg-red-50 transition-colors"
+      >
+        ×
+      </button>
+    )}
+  </div>
+
+  {/* Mesaj de eroare dacă Wikipedia nu găsește autorul */}
+  {imageError && (
+    <p className="mt-1 text-xs text-red-500">⚠ {imageError}</p>
+  )}
+
+  {/* Previzualizare imagine — apare după ce s-a găsit cu succes */}
+  {imageUrl && !imageError && (
+    <div className="mt-3 flex items-center gap-3 p-3 bg-gray-50
+                    rounded-lg border border-gray-100">
+      <img
+        src={`http://localhost:5000${imageUrl}`}
+        alt={formData.author}
+        className="w-16 h-16 rounded-full object-cover border-2 border-indigo-200"
+        // Fallback dacă imaginea nu se încarcă
+        onError={e => { e.target.style.display = "none"; }}
+      />
+      <div>
+        <p className="text-xs font-medium text-gray-700">{formData.author}</p>
+        <p className="text-xs text-gray-400 truncate max-w-xs">{imageUrl}</p>
+      </div>
+    </div>
+  )}
+</div>
+
+
+
 {/*Camp  citat */}
 <div>
     <label htmlFor="quote" className="block text-sm font-medium text-gray-700 mb-1">
@@ -197,7 +289,7 @@ className={inputClass("author")}
     required
     className={`${inputClass("quote")} resize-none`}
     />
-    <div className="flex sutify-between mt-1">
+    <div className="flex justify-between mt-1">
     {errors.quote
     ? <p className="text-xs text-red-500 flex itemss-center gap-1">
         <span>⚠️</span> {errors.quote}

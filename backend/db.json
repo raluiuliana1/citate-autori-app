@@ -3,17 +3,62 @@
     {
       "id": "1",
       "author": "Socrates",
-      "quote": "The only true wisdom is in knowing you know nothing"
+      "quote": "The only true wisdom is in knowing you know nothing",
+      "imageUrl": "/images/socrates.jpg"
     },
     {
       "id": "2",
       "author": "Albert Einstein",
-      "quote": "life is like riding a bicycle.To keep your balance you must keep moving"
+      "quote": "life is like riding a bicycle.To keep your balance you must keep moving",
+      "imageUrl": ""
     },
     {
       "id": "3",
       "author": "Rene Decartes",
-      "quote": "I think,therefore I am"
+      "quote": "I think,therefore I am",
+      "imageUrl": ""
+    },
+    {
+      "id": "4",
+      "author": "Albert Einstein",
+      "quote": "jnjnjgh"
+    },
+    {
+      "id": "5",
+      "author": "Albert Einstein",
+      "quote": "hrfgbejhbgk"
+    },
+    {
+      "id": "5",
+      "author": "Albert Einstein",
+      "quote": "hrfgbejhbgk"
+    },
+    {
+      "id": "5",
+      "author": "Albert Einstein",
+      "quote": "hrfgbejhbgk"
+    },
+    {
+      "id": "6",
+      "author": "Socrates",
+      "quote": "socrate e smecher"
+    },
+    {
+      "id": "7",
+      "author": "Albert Einstein",
+      "quote": "albert einsteinnnnnn"
+    },
+    {
+      "id": "8",
+      "author": "Marcus Aurelius",
+      "quote": "marcus aurelius",
+      "imageUrl": "/images/marcus_aurelius.jpg"
+    },
+    {
+      "id": "9",
+      "author": "Albert Einstein",
+      "quote": "mama lui de citat",
+      "imageUrl": "/images/albert_einstein.jpg"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

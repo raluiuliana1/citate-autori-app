@@ -4,6 +4,11 @@ const Joi=require("joi");
 const fs=require("fs");
 const path=require("path");
 const app=express();
+const IMAGES_DIR = path.join(__dirname, "images");
+
+if (!fs.existsSync(IMAGES_DIR)) {
+  fs.mkdirSync(IMAGES_DIR, { recursive: true });
+}
 
 app.use(cors());
 app.use(express.json());
@@ -20,10 +25,10 @@ const validateId=(req,res,next)=>{
   next();
 };
 
-//schema joi pentru validarea citatelor
 const quoteSchema=Joi.object({
   author:Joi.string().min(2).required(),
   quote:Joi.string().min(5).required(),
+  imageUrl: Joi.string().allow("").optional()
 });
 
 
@@ -118,6 +123,81 @@ app.post("/api/quotes",async(req,res)=>{
   }
   });
 
+
+  app.post("/api/quotes/fetch-image", async (req, res) => {
+  const { author } = req.body;
+
+  if (!author || !author.trim()) {
+    return res.status(400).json({ error: "Numele autorului este obligatoriu." });
+  }
+
+  try {
+
+    const wikiName = author.trim().replace(/\s+/g, "_");
+    const wikiUrl =
+      `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(wikiName)}`;
+
+    // Cerere către Wikipedia REST API
+    // User-Agent este recomandat de Wikipedia pentru identificarea aplicației
+    const wikiResponse = await fetch(wikiUrl, {
+      headers: {
+        "User-Agent": "PrintingQuotesApp/1.0"
+      }
+    });
+
+    if (!wikiResponse.ok) {
+      return res.status(404).json({
+        error: `Autorul "${author}" nu a fost găsit pe Wikipedia.`
+      });
+    }
+
+    const wikiData = await wikiResponse.json();
+
+    // Verificăm dacă pagina Wikipedia are o imagine thumbnail
+    if (!wikiData.thumbnail?.source) {
+      return res.status(404).json({
+        error: `Nu există imagine disponibilă pentru "${author}" pe Wikipedia.`
+      });
+    }
+
+    const imageUrl = wikiData.thumbnail.source;
+
+    const ext = imageUrl.split(".").pop().split("?")[0].toLowerCase();
+
+   
+    const fileName = `${author.trim().toLowerCase().replace(/\s+/g, "_")}.${ext}`;
+    const filePath  = path.join(IMAGES_DIR, fileName);
+
+    if (fs.existsSync(filePath)) {
+      console.log(`Imagine existentă returnată: ${fileName}`);
+      return res.status(200).json({ imageUrl: `/images/${fileName}` });
+    }
+
+const imgResponse = await fetch(imageUrl);
+if(!imgResponse.ok) {
+return res.status(500).json({ error: "nu s-a putut descarca imaginea."});
+}
+
+    // Convertim răspunsul într-un Buffer (date binare)
+    const buffer = Buffer.from(await imgResponse.arrayBuffer());
+
+    // Scriem fișierul pe disc în directorul /images
+    fs.writeFileSync(filePath, buffer);
+    console.log(`Imagine salvată: ${fileName}`);
+
+    // Returnăm URL-ul local — Express servește /images/* ca static
+    res.status(200).json({ imageUrl: `/images/${fileName}` });
+
+  } catch (error) {
+    console.error("Eroare la fetch-image:", error.message);
+    res.status(500).json({ error: "Eroare internă la preluarea imaginii." });
+  }
+});
+
+
+
+
+
 //PUT /api/quotes/:id actualizaeaza citatul cu id-ul specificat in url. ':id' este un parametru dinamic, accesibil prin req.params.id
 
 /*app.put("/api/quotes/:id", (req, res) => {
@@ -157,7 +237,7 @@ app.put("/api/quotes/:id",async(req,res)=>{
     }
     const data=await response.json();
     //creati un nou obiect cu id ca prima cheie
-    const reorderedData={id:data.id,author:data.author,quote:data.quote};
+    const reorderedData={id:data.id,author:data.author,quote:data.quote, imageUrl:data.imageUrl||""};
     res.status(response.status).json(reorderedData);
   }catch(error){
     console.error("Error updating quote:",error);
