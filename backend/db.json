@@ -7,48 +7,6 @@
       "imageUrl": "/images/socrates.jpg"
     },
     {
-      "id": "2",
-      "author": "Albert Einstein",
-      "quote": "life is like riding a bicycle.To keep your balance you must keep moving",
-      "imageUrl": ""
-    },
-    {
-      "id": "3",
-      "author": "Rene Decartes",
-      "quote": "I think,therefore I am",
-      "imageUrl": ""
-    },
-    {
-      "id": "4",
-      "author": "Albert Einstein",
-      "quote": "jnjnjgh"
-    },
-    {
-      "id": "5",
-      "author": "Albert Einstein",
-      "quote": "hrfgbejhbgk"
-    },
-    {
-      "id": "5",
-      "author": "Albert Einstein",
-      "quote": "hrfgbejhbgk"
-    },
-    {
-      "id": "5",
-      "author": "Albert Einstein",
-      "quote": "hrfgbejhbgk"
-    },
-    {
-      "id": "6",
-      "author": "Socrates",
-      "quote": "socrate e smecher"
-    },
-    {
-      "id": "7",
-      "author": "Albert Einstein",
-      "quote": "albert einsteinnnnnn"
-    },
-    {
       "id": "8",
       "author": "Marcus Aurelius",
       "quote": "marcus aurelius",
@@ -56,9 +14,33 @@
     },
     {
       "id": "9",
+      "author": "Nikola Tesla",
+      "quote": "\"Be alone, that is the secret of invention; be alone, that is when ideas are born\".",
+      "imageUrl": "/images/nikola_tesla.jpeg"
+    },
+    {
+      "id": "10",
+      "author": "Oscar Wilde",
+      "quote": "\"Be yourself; everyone else is already taken.\"",
+      "imageUrl": "/images/oscar_wilde.jpg"
+    },
+    {
+      "id": "11",
+      "author": "Leonardo da Vinci",
+      "quote": "\"Painting is poetry that is seen rather than felt, and poetry is painting that is felt rather than seen\".",
+      "imageUrl": "/images/leonardo_da_vinci.png"
+    },
+    {
+      "id": "12",
+      "author": "René Descartes",
+      "quote": "“I think, therefore I am” ",
+      "imageUrl": "/images/rené_descartes.jpg"
+    },
+    {
+      "id": "13",
       "author": "Albert Einstein",
-      "quote": "mama lui de citat",
-      "imageUrl": "/images/albert_einstein.jpg"
+      "quote": "Imaginația este mai importantă decât cunoașterea, pentru că cunoașterea este limitată, iar imaginația îmbrățișează întreaga lume.",
+      "imageUrl": ""
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

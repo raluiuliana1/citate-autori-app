@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express=require("express");
 const cors=require("cors");
 const Joi=require("joi");
@@ -5,6 +6,7 @@ const fs=require("fs");
 const path=require("path");
 const app=express();
 const IMAGES_DIR = path.join(__dirname, "images");
+
 
 if (!fs.existsSync(IMAGES_DIR)) {
   fs.mkdirSync(IMAGES_DIR, { recursive: true });
@@ -17,7 +19,11 @@ app.use("/images", express.static(path.join(__dirname,"images")));
 
 const JSON_SERVER_URL="http://localhost:3000/quotes";
 //verificam daca id-ul din PUT si DELETE este un numar valid
-
+const OpenAI=require("openai");
+const openai=new OpenAI({
+  baseURL:"https://models.inference.ai.azure.com",
+  apiKey:process.env.GITHUB_TOKEN,
+});
 const validateId=(req,res,next)=>{
   if(isNaN(req.params.id)){
     return res.status(400).json({error:"invalid ID format"});
@@ -194,7 +200,56 @@ return res.status(500).json({ error: "nu s-a putut descarca imaginea."});
   }
 });
 
+app.post("/api/quotes/generate-quote",async (req, res) =>{
+  const { author } = req.body;
 
+if (!author || !author.trim()) {
+  return res.status(400).json({ error: "Numele autorului este obligatoriu." });
+}
+
+try {
+  // Apelăm OpenAI cu un prompt structurat.
+  // gpt-4o-mini - model rapid și economic, ideal pentru generare de text scurt.
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      {
+        // Mesajul de sistem definește rolul și comportamentul AI-ului.
+        // Este trimis o singură dată și stabilește contextul conversației.
+        role: "system",
+        content: `Ești un cunoscător în literatură și filosofie.
+Generezi citate scurte, inspiraționale și autentice.
+Răspunzi DOAR cu citatul, fără ghilimele, fără numele autorului,
+fără explicații suplimentare. Maxim 2 propoziții.`,
+      },
+      {
+        // Mesajul utilizatorului - cererea efectivă
+        role: "user",
+        content: `Scrie un citat autentic specific lui ${author.trim()}.
+Dacă autorul are citate celebre cunoscute, folosește unul dintre ele.
+Dacă nu, generează unul în stilul și filosofia sa.`,
+      },
+    ],
+    // Limităm lungimea răspunsului - un citat scurt nu necesită mai mult
+    max_tokens: 150,
+    // temperature controlează creativitatea: 0 = determinist, 1 = creativ
+    // 0.7 = echilibru bun între autenticitate și variație
+    temperature: 0.7,
+  });
+
+  // Extragem textul din răspunsul OpenAI și eliminăm spațiile extra
+  const generatedQuote = completion.choices[0].message.content.trim();
+
+  res.status(200).json({ quote: generatedQuote });
+
+} catch (error) {
+  console.error("Eroare OpenAI:", error.message);
+  if(error.status===401) {
+    return res.status(500).json({error:"Cheie API OpenAI invalida."});
+  }
+res.status(500).json({error:"nu s-a putut genera citatul."});
+}
+});
 
 
 
