@@ -36,6 +36,7 @@ export async function fetchAuthorImage(author) {
   }
   return response.json(); // { imageUrl: "/images/..." }
 }
+
 export async function updateQuote(id, quoteData) {
 const response = await fetch(`${BASE_URL}/${id}`, {
 method: "PUT",
@@ -52,4 +53,23 @@ return response.json();
 export async function deleteQuote(id) {
     const response = await fetch(`${BASE_URL}/${id}`, {method:"DELETE"});
     if (!response.ok) throw new Error ("nu s-aa putut sterge citatul.");
+}
+
+
+export async function generateQuote(author) {
+  const response = await fetch(
+    `${BASE_URL.replace("/quotes", "")}/quotes/generate-quote`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ author }),
+    }
+  );
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || "Nu s-a putut genera citatul.");
+  }
+
+  return response.json(); 
 }

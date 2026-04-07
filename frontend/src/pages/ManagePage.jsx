@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link} from "react-router-dom";
 import QuoteCard from "../components/QuoteCard";
-import { getAllQuotes, addQuote, updateQuote, deleteQuote,fetchAuthorImage } from "../api/quotesApi";
+import { getAllQuotes, addQuote, updateQuote, deleteQuote,fetchAuthorImage,generateQuote} from "../api/quotesApi";
 import {useFormValidation} from "../hooks/useFormValidation";
+
 
 const VAlIDATION_RULES={
     author:{
@@ -39,11 +40,43 @@ const {errors,validate,clearErrors}= useFormValidation(VAlIDATION_RULES);
 const [imageUrl, setImageUrl]         = useState("");
 const [imageLoading, setImageLoading] = useState(false);
 const [imageError, setImageError]     = useState("");
+const[aiLoading,setAiLoading]=useState(false);
+const[aiGenerated, setAiGenerated]=useState(false);
+
+
 
 useEffect(()=>{
         fetchQuotes();
     }, []);
 
+useEffect(() => {
+
+  if (
+    formData.author.trim().length < 3 ||
+    editingQuote ||
+    formData.quote.trim().length > 0
+  ) return;
+
+
+  const timer = setTimeout(async () => {
+    setAiLoading(true);
+    try {
+      const result = await generateQuote(formData.author);
+
+      setFormData(prev => ({ ...prev, quote: result.quote }));
+      setAiGenerated(true); 
+    } catch (err) {
+
+      console.warn("Generare AI eșuată:", err.message);
+    } finally {
+      setAiLoading(false);
+    }
+  }, 3000); 
+
+  
+  return () => clearTimeout(timer);
+
+}, [formData.author, editingQuote]);
 
 async function fetchQuotes() {
 try {
@@ -59,6 +92,9 @@ setLoading (false);
      
 function handleChange(e) {
 setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+if(e.target.name ==="quote"){
+  setAiGenerated(false);
+}
 }
 
 async function handleFetchImage() {
@@ -108,6 +144,7 @@ setEditingQuote(null);
 setFormData({ author: "", quote: ""});
 setImageUrl("");
 setImageError("");
+setAiGenerated(false);
 clearErrors();
 }
 
@@ -274,34 +311,66 @@ className={inputClass("author")}
 
 
 
-{/*Camp  citat */}
+{/* Câmp citat - populat automat de AI sau manual */}
 <div>
-    <label htmlFor="quote" className="block text-sm font-medium text-gray-700 mb-1">
-        Citat
+  <div className="flex items-center justify-between mb-1">
+    <label htmlFor="quote"
+      className="block text-sm font-medium text-gray-700">
+      Citat
     </label>
-    <textarea 
+
+    {/* Indicator de stare AI - vizibil în timp ce OpenAI generează citat */}
+    {aiLoading && (
+      <span className="text-xs text-indigo-500 flex items-center gap-1 animate-pulse">
+        <span>⚡</span> AI generează citat...
+      </span>
+    )}
+
+    {/* Badge „Generat de AI” - apare după generare, dispare la editare manuală */}
+    {aiGenerated && !aiLoading && (
+      <span className="text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full border border-indigo-200">
+        ✨ Generat de AI
+      </span>
+    )}
+  </div>
+
+  <textarea
     id="quote"
     name="quote"
     value={formData.quote}
     onChange={handleChange}
-    placeholder="Introduceti citatul..."
+    placeholder={aiLoading
+      ? "Se generează citatul..."
+      : "Introduceți citatul sau așteptați generarea automată..."}
     rows={4}
-    required
-    className={`${inputClass("quote")} resize-none`}
-    />
-    <div className="flex justify-between mt-1">
-    {errors.quote
-    ? <p className="text-xs text-red-500 flex itemss-center gap-1">
-        <span>⚠️</span> {errors.quote}
-    </p>
-    : <span />
-    }
+    className={`${inputClass("quote")} resize-none transition-all 
+      ${aiLoading ? "bg-indigo-50 border-indigo-200" : ""}`}
+  />
 
-    <span className={`text-xs ml-auto ${formData.quote.length > 450 ? "text-red-400" :"text-gray-400"}`}>
-        {formData.quote.length}/500
+  <div className="flex justify-between mt-1 items-start">
+    <div className="flex flex-col gap-1">
+      {errors.quote && (
+        <p className="text-xs text-red-500 flex items-center gap-1">
+          <span>⚠</span> {errors.quote}
+        </p>
+      )}
+      
+      {/* Notă adăugată – citatul AI poate fi editat sau înlocuit */}
+      {aiGenerated && !aiLoading && (
+        <p className="text-xs text-gray-400 italic">
+          ⚠ Citat sugerat de AI – verificați autenticitatea înainte de salvare.
+        </p>
+      )}
+    </div>
+    
+    <span className={`text-xs ml-auto flex-shrink-0 
+      ${formData.quote.length > 450 ? "text-red-400" : "text-gray-400"}`}>
+      {formData.quote.length}/500
     </span>
- </div>
+  </div>
 </div>
+
+
 {/*Butoanele formular se schimba in functie de mod */}
 <div className="flex gap-3 pt-2">
     <button 
