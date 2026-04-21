@@ -34,7 +34,11 @@ const validateId=(req,res,next)=>{
 const quoteSchema=Joi.object({
   author:Joi.string().min(2).required(),
   quote:Joi.string().min(5).required(),
-  imageUrl: Joi.string().allow("").optional()
+  imageUrl: Joi.string().allow("").optional(),
+  category: Joi.string()
+  .valid("intelepciune","motivatie","umor","filosofie","stiinta")
+  .allow("")
+  .optional(),
 });
 
 
@@ -69,17 +73,18 @@ app.get("/api/quotes",async(req,res)=>{
   try{
     const response=await fetch(JSON_SERVER_URL);
     const data=await response.json();
-const {search}=req.query;
+const {search, category }=req.query;
+let result=data;
 if(search && search.trim()){
   const term = search.trim().toLowerCase();
-
-  const filtered=data.filter(q =>
+  result=result.filter(q =>
     q.author.toLowerCase().includes(term) ||
     q.quote.toLowerCase().includes(term)
   );
-  return res.status(200).json(filtered);
+}if(category && category != "all"){
+  result=result.filter(q=> q.category === category )
 }
-    res.status(200).json(data);
+    res.status(200).json(result);
   }catch (error){
     console.error("eroare la preluarea citatelor:",error.message);
     res.status(500).json({error:"nu s-au putut prelua citatele"});

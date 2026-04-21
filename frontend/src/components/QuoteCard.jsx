@@ -1,3 +1,4 @@
+import { CATEGORIES } from "../constants/categories";
 export default function QuoteCard({ quote, onEdit, onDelete}) {
 
 const imgSrc = quote.imageUrl
@@ -11,7 +12,7 @@ const imgSrc = quote.imageUrl
     .join("")
     .toUpperCase()
     .slice(0, 2);
-
+    const categoryObj = CATEGORIES.find(c => c.id === quote.category);
     return (
         <div className="flex flex-col justify-between bg-white rounded-2xl shadow-md
                                             hover:shadow-lg transition-shadow duration-300 p-6 border
@@ -55,7 +56,16 @@ const imgSrc = quote.imageUrl
           {quote.quote}
         </p>
       </div>
+{/* — Badge categorie — */}
 
+  {categoryObj && (
+    <div className="mt-3">
+      <span className={`inline-flex items-center gap-1 text-xs font-medium
+                        px-2 py-0.5 rounded-full border ${categoryObj.color}`}>
+        {categoryObj.emoji} {categoryObj.label}
+      </span>
+    </div>
+  )}
 
                    <p className="text-right text-sm font-semibold text-brand-dark mt-4">
                             - {quote.author}

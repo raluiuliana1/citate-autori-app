@@ -4,43 +4,57 @@
       "id": "1",
       "author": "Socrates",
       "quote": "The only true wisdom is in knowing you know nothing",
-      "imageUrl": "/images/socrates.jpg"
+      "imageUrl": "/images/socrates.jpg",
+      "category": "intelepciune"
     },
     {
       "id": "8",
       "author": "Marcus Aurelius",
       "quote": "marcus aurelius",
-      "imageUrl": "/images/marcus_aurelius.jpg"
+      "imageUrl": "/images/marcus_aurelius.jpg",
+      "category": "intelepciune"
     },
     {
       "id": "9",
       "author": "Nikola Tesla",
       "quote": "\"Be alone, that is the secret of invention; be alone, that is when ideas are born\".",
-      "imageUrl": "/images/nikola_tesla.jpeg"
+      "imageUrl": "/images/nikola_tesla.jpeg",
+      "category": "stiinta"
     },
     {
       "id": "10",
       "author": "Oscar Wilde",
       "quote": "\"Be yourself; everyone else is already taken.\"",
-      "imageUrl": "/images/oscar_wilde.jpg"
+      "imageUrl": "/images/oscar_wilde.jpg",
+      "category": "filosofie"
     },
     {
       "id": "11",
       "author": "Leonardo da Vinci",
       "quote": "\"Painting is poetry that is seen rather than felt, and poetry is painting that is felt rather than seen\".",
-      "imageUrl": "/images/leonardo_da_vinci.png"
+      "imageUrl": "/images/leonardo_da_vinci.png",
+      "category": "intelepciune"
     },
     {
       "id": "12",
       "author": "René Descartes",
       "quote": "“I think, therefore I am” ",
-      "imageUrl": "/images/rené_descartes.jpg"
+      "imageUrl": "/images/rené_descartes.jpg",
+      "category": "filosofie"
     },
     {
       "id": "13",
       "author": "Albert Einstein",
       "quote": "Imaginația este mai importantă decât cunoașterea, pentru că cunoașterea este limitată, iar imaginația îmbrățișează întreaga lume.",
-      "imageUrl": ""
+      "imageUrl": "",
+      "category": "stiinta"
+    },
+    {
+      "id": "14",
+      "author": "Phyllis Diller",
+      "quote": "I'm at an age when my back goes out more than I do.",
+      "imageUrl": "/images/phyllis_diller.jpg",
+      "category": "umor"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

@@ -1,9 +1,12 @@
 
 const BASE_URL = "/api/quotes";
-export async function getAllQuotes(search ="") {
-    const url=search.trim()
-    ?`${BASE_URL}?search=${encodeURIComponent(search.trim())}`
-    :BASE_URL;
+export async function getAllQuotes(search ="", category = "") {
+const params = new URLSearchParams();
+
+if(search.trim())         params.append("search", search.trim());
+if(category && category != "all")     params.append("category", category);
+const queryString =params.toString();
+const url = queryString ? `${BASE_URL}?${queryString}`: BASE_URL;
 
 const response = await fetch(url);
 if (!response.ok) throw new Error("Nu s-au putut prelua citatele.");

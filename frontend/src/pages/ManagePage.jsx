@@ -3,7 +3,7 @@ import { Link} from "react-router-dom";
 import QuoteCard from "../components/QuoteCard";
 import { getAllQuotes, addQuote, updateQuote, deleteQuote,fetchAuthorImage,generateQuote} from "../api/quotesApi";
 import {useFormValidation} from "../hooks/useFormValidation";
-
+import { CATEGORIES } from "../constants/categories";
 
 const VAlIDATION_RULES={
     author:{
@@ -42,6 +42,7 @@ const [imageLoading, setImageLoading] = useState(false);
 const [imageError, setImageError]     = useState("");
 const[aiLoading,setAiLoading]=useState(false);
 const[aiGenerated, setAiGenerated]=useState(false);
+const [category, setCategory ]= useState("");
 
 
 
@@ -122,6 +123,7 @@ function handleEdit(quote) {
 setEditingQuote(quote);
 setFormData({ author: quote.author, quote: quote.quote });
 setImageUrl(quote.imageUrl || "");
+setCategory(quote.category|| "");
 setImageError("");
 clearErrors();
 window.scrollTo({ top:0, behavior: "smooth" });
@@ -144,6 +146,7 @@ setEditingQuote(null);
 setFormData({ author: "", quote: ""});
 setImageUrl("");
 setImageError("");
+setCategory("");
 setAiGenerated(false);
 clearErrors();
 }
@@ -155,7 +158,7 @@ e.preventDefault();
 if(!validate(formData)) return;
 
 
-const payload={...formData,imageUrl};
+const payload={...formData,imageUrl, category};
 
 try {
 if (editingQuote) {
@@ -309,7 +312,29 @@ className={inputClass("author")}
   )}
 </div>
 
-
+{/* ── Dropdown categorie ── */}   
+<div>
+  <label htmlFor="category"
+    className="block text-sm font-medium text-gray-700 mb-1">
+    Categorie
+    <span className="ml-1 text-gray-400 font-normal">(opțional)</span>
+  </label>
+  <select
+    id="category"
+    value={category}
+    onChange={e => setCategory(e.target.value)}
+    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm
+               bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300
+               text-gray-700 transition"
+  >
+    <option value="">— Fără categorie —</option>
+    {CATEGORIES.map(cat => (
+      <option key={cat.id} value={cat.id}>
+        {cat.emoji} {cat.label}
+      </option>
+    ))}
+  </select>
+</div>
 
 {/* Câmp citat - populat automat de AI sau manual */}
 <div>
